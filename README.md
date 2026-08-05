@@ -1,7 +1,11 @@
 # odhllc-site
 
-The public web page for **ODH LLC** — the holding company that owns Garage
-Buddy and Workout Buddy.
+The public web page for **ODH LLC** — Oregon Diversified Holdings LLC, the
+holding company that owns Garage Buddy and Workout Buddy.
+
+`odhllc.com` is the short domain for the same entity as
+`oregondiversifiedholdings.com`, which is separately registered and currently
+points at DreamHost shared hosting.
 
 ## Pages
 
