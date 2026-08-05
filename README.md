@@ -15,9 +15,18 @@ Static files in `site/`, published to **GitHub Pages** by
 `.github/workflows/pages.yml` on every push to `main`. TLS is GitHub's
 (Let's Encrypt), issued automatically for the custom domain.
 
-`site/CNAME` pins the custom domain to `odhllc.com`. **Don't delete it** —
-GitHub rewrites the repo's Pages domain setting from this file on each deploy,
-so removing it unsets the custom domain.
+The custom domain (`odhllc.com`) lives in the **repo's Pages setting**, not in
+the repo contents:
+
+```sh
+gh api -X PUT repos/shuffman/odhllc-site/pages -f cname=odhllc.com
+```
+
+`site/CNAME` is kept as documentation and is **inert for Actions-based
+deploys** — verified 2026-08-05: three successful deploys with the file present
+left the Pages `cname` setting at `null` until it was set explicitly via the
+API. (The file *is* honoured by the legacy branch build, which is where the
+"just commit a CNAME" advice comes from.)
 
 ## Adding a page
 
