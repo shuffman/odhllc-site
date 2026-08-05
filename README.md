@@ -32,6 +32,17 @@ left the Pages `cname` setting at `null` until it was set explicitly via the
 API. (The file *is* honoured by the legacy branch build, which is where the
 "just commit a CNAME" advice comes from.)
 
+**Set the domain AFTER DNS points at GitHub.** Setting it first makes validation
+fail, and GitHub then never requests a certificate — `https_certificate` stays
+absent and HTTPS serves the wrong cert. Re-`PUT`ting the same value doesn't help;
+clear it and set it again:
+
+```sh
+echo '{"cname":null}' | gh api -X PUT repos/shuffman/odhllc-site/pages --input -
+gh api -X PUT repos/shuffman/odhllc-site/pages -f cname=odhllc.com
+gh api -X PUT repos/shuffman/odhllc-site/pages -F https_enforced=true   # once approved
+```
+
 ## Adding a page
 
 GitHub Pages has no `try_files`, so clean URLs come from directories, not
