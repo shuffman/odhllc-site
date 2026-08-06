@@ -1,7 +1,8 @@
 /* ─────────────────────────────────────────────────────────────
-   Brand — the ONLY per-site block. Everything below is shared
-   byte-for-byte across odhllc-site, garage-buddy-site and
-   workout-buddy-site.
+   Shared design system across odhllc-site, garage-buddy-site and
+   workout-buddy-site. Everything from "Tokens" to "Footer" is
+   identical in all three; only the brand block below differs, plus
+   the per-site hero blocks the app sites carry (this site has none).
    ───────────────────────────────────────────────────────────── */
 :root {
   --accent: #2f6f6b;        /* ODH teal */
