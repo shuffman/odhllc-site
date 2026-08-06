@@ -58,14 +58,53 @@ point at GitHub's Pages anycast addresses; `www` is a `CNAME` to
 
 DNS moved off DreamHost 2026-08-04: DreamHost's DNS API returns `no_such_zone`
 for newly registered domains until the zone is provisioned by hand in their
-panel, and the API has no command to do that. Cloudflare's API can create zones
-and records outright, so all three site domains live there now.
+panel, and the API has no command to do that — its key exposes only
+`dns-add_record`, `dns-list_records` and `dns-remove_record`. Cloudflare's API
+manages records outright, so all three site domains live there now.
 
 **All records must stay DNS-only (grey cloud).** A proxied record breaks
-GitHub's HTTP-01 challenge, so the Let's Encrypt certificate never issues.
+GitHub's HTTP-01 challenge, so the Let's Encrypt certificate never issues — and
+because `.app` is HSTS-preloaded, no certificate there means unreachable rather
+than merely insecure.
 
-Records are managed by `scratchpad/cf_pages_dns.py` (idempotent — it converges
-the apex and `www` to the GitHub Pages set and leaves MX/TXT alone).
+## DNS tooling
+
+This repo carries the DNS scripts for **all three** site domains, not just its
+own — they're one concern and splitting them three ways would be worse.
+
+| Script | What it does |
+|---|---|
+| `scripts/cf.py` | Minimal Cloudflare API client; reads `~/.keys.yaml`. Also a CLI: `python3 scripts/cf.py zones` |
+| `scripts/cf_pages_dns.py` | Converges a zone's apex + `www` to the GitHub Pages record set. Idempotent; leaves MX/TXT alone |
+| `scripts/odh_migrate.py` | Pending migration of `oregondiversifiedholdings.com` — see below |
+| `scripts/odh_zone_snapshot.txt` | Rollback reference: that domain's 16 DreamHost records as of 2026-08-04 |
+
+```sh
+python3 scripts/cf_pages_dns.py odhllc.com garage-buddy.app workout-buddy.me
+python3 scripts/cf_pages_dns.py odhllc.com --apply
+```
+
+Use the **`cloudflare-dns`** key. The `cloudflare-admin` block is an R2
+object-storage token despite the name and cannot touch DNS — it fails with
+`10000 Authentication error`, which looks like a broken key but is the wrong
+one. Neither key can *create* zones, so a new site must be added in the
+Cloudflare dashboard before these scripts can manage it.
+
+## Pending: oregondiversifiedholdings.com
+
+`scripts/odh_migrate.py` is written and dry-run tested but **not applied**. It
+turns that domain into a 301 redirect to `odhllc.com` while preserving its live
+Google Workspace mail — 7 MX records and 5 `ghs.googlehosted.com` CNAMEs.
+
+Blocked on adding the site in the Cloudflare dashboard. Then:
+
+1. Run `python3 scripts/odh_migrate.py` (dry run) and check the plan.
+2. `--apply`, then **verify all 7 MX records exist in Cloudflare**.
+3. Only then change nameservers at DreamHost. Records first, delegation second —
+   reversing that order bounces mail during the gap.
+
+The redirect rule needs `Zone → Config` on the token; the "Edit zone DNS"
+template doesn't grant it, and the script reports plainly if it's rejected.
 
 ## Related
 
